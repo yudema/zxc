@@ -1,0 +1,26 @@
+{% extends 'calculator/base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-body text-center">
+                    <h1 class="text-danger mb-4">
+                        <i class="bi bi-shield-exclamation"></i>
+                    </h1>
+                    <h2 class="mb-4">Доступ заблокирован</h2>
+                    <p class="lead mb-4">
+                        Ваш доступ временно заблокирован из-за слишком большого количества попыток.
+                        Пожалуйста, подождите {{ cooloff_time }} минут перед следующей попыткой.
+                    </p>
+                    <div class="alert alert-info" role="alert">
+                        <i class="bi bi-info-circle"></i>
+                        Если вы считаете, что это ошибка, пожалуйста, свяжитесь с администратором.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

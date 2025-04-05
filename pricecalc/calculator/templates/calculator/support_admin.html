@@ -1,0 +1,326 @@
+{% extends 'calculator/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="support-admin">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="tickets-list card">
+                <div class="card-header bg-primary text-white">
+                    <h4>Тикеты поддержки</h4>
+                </div>
+                <div class="card-body tickets-container p-0">
+                    {% for ticket in tickets %}
+                        <div class="ticket-card" data-ticket-id="{{ ticket.id }}">
+                            <div class="ticket-header d-flex justify-content-between align-items-center">
+                                <span class="ticket-number">#{{ ticket.id }} {{ ticket.subject }}</span>
+                                <span class="badge {% if ticket.status == 'new' %}bg-danger{% elif ticket.status == 'in_progress' %}bg-warning{% elif ticket.status == 'resolved' %}bg-success{% else %}bg-secondary{% endif %}">
+                                    {{ ticket.get_status_display }}
+                                </span>
+                            </div>
+                            <div class="ticket-body">
+                                <div class="ticket-email text-muted"><i class="bi bi-envelope"></i> {{ ticket.email }}</div>
+                                <div class="ticket-date text-muted small"><i class="bi bi-clock"></i> {{ ticket.created_at|date:"d.m.Y H:i" }}</div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="no-tickets p-3 text-center">
+                            <p>Нет активных тикетов</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="chat-panel card" id="chatPanel">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4 id="chatTitle">Чат с клиентом</h4>
+                    <div class="ticket-controls">
+                        <select id="ticketStatus" class="form-select">
+                            <option value="new">Новый</option>
+                            <option value="in_progress">В работе</option>
+                            <option value="resolved">Решен</option>
+                            <option value="closed">Закрыт</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="messages-container" id="messages">
+                        <div class="no-ticket-selected text-center p-5">
+                            <h5>Выберите тикет для просмотра переписки</h5>
+                            <p class="text-muted">Нажмите на тикет в списке слева</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <form id="messageForm" class="d-none">
+                        <div class="input-group">
+                            <input type="text" id="newMessage" class="form-control" placeholder="Введите сообщение...">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-send"></i>
+                            </button>
+                        </div>
+                    </form>
+                    <div id="noTicketMessage" class="text-center text-muted">
+                        Выберите тикет для отправки сообщения
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.support-admin {
+    padding: 20px;
+}
+.tickets-container {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+.ticket-card {
+    border-bottom: 1px solid #eee;
+    padding: 15px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.ticket-card:hover, .ticket-card.active {
+    background-color: #f5f9ff;
+}
+.ticket-card.active {
+    border-left: 4px solid #0d6efd;
+}
+.messages-container {
+    height: 60vh;
+    overflow-y: auto;
+    padding: 15px;
+}
+.message {
+    margin-bottom: 15px;
+    padding: 10px 15px;
+    border-radius: 10px;
+    max-width: 80%;
+    position: relative;
+}
+.message.client {
+    background-color: #f1f0f0;
+    margin-right: auto;
+}
+.message.staff {
+    background-color: #d1e7ff;
+    margin-left: auto;
+}
+.message-time {
+    font-size: 0.8em;
+    color: #888;
+    margin-top: 5px;
+    text-align: right;
+}
+#ticketStatus {
+    width: auto;
+    min-width: 120px;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let currentTicketId = null;
+    const messagesContainer = document.getElementById('messages');
+    const messageForm = document.getElementById('messageForm');
+    const noTicketMessage = document.getElementById('noTicketMessage');
+    const ticketStatus = document.getElementById('ticketStatus');
+    const chatTitle = document.getElementById('chatTitle');
+    
+    // Обработка клика по тикету
+    document.querySelectorAll('.ticket-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const ticketId = this.dataset.ticketId;
+            const ticketSubject = this.querySelector('.ticket-number').textContent;
+            
+            loadTicketMessages(ticketId);
+            currentTicketId = ticketId;
+            
+            // Визуальное выделение выбранного тикета
+            document.querySelectorAll('.ticket-card').forEach(c => c.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Показываем форму сообщений и скрываем сообщение о выборе тикета
+            messageForm.classList.remove('d-none');
+            noTicketMessage.classList.add('d-none');
+            
+            // Обновляем заголовок чата
+            chatTitle.textContent = ticketSubject;
+            
+            // Устанавливаем текущий статус тикета
+            const statusBadge = this.querySelector('.badge');
+            const statusText = statusBadge.textContent.trim();
+            
+            // Находим опцию с соответствующим текстом
+            for (let i = 0; i < ticketStatus.options.length; i++) {
+                if (ticketStatus.options[i].text === statusText) {
+                    ticketStatus.selectedIndex = i;
+                    break;
+                }
+            }
+        });
+    });
+    
+    // Отправка сообщения
+    if (messageForm) {
+        messageForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!currentTicketId) return;
+            
+            const messageInput = document.getElementById('newMessage');
+            const message = messageInput.value.trim();
+            
+            if (!message) return;
+            
+            try {
+                const response = await fetch('{% url "calculator:admin_send_message" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        ticket_id: currentTicketId,
+                        message: message,
+                        status: ticketStatus.value
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    messageInput.value = '';
+                    
+                    // Добавляем сообщение без перезагрузки
+                    appendMessage({
+                        message: message,
+                        is_staff: true,
+                        created_at: new Date().toLocaleString('ru-RU')
+                    });
+                    
+                    // Обновляем статус тикета в интерфейсе
+                    const activeTicket = document.querySelector('.ticket-card.active');
+                    if (activeTicket) {
+                        const statusBadge = activeTicket.querySelector('.badge');
+                        statusBadge.textContent = ticketStatus.options[ticketStatus.selectedIndex].text;
+                        
+                        // Обновляем класс бейджа
+                        statusBadge.className = 'badge';
+                        if (ticketStatus.value === 'new') {
+                            statusBadge.classList.add('bg-danger');
+                        } else if (ticketStatus.value === 'in_progress') {
+                            statusBadge.classList.add('bg-warning');
+                        } else if (ticketStatus.value === 'resolved') {
+                            statusBadge.classList.add('bg-success');
+                        } else {
+                            statusBadge.classList.add('bg-secondary');
+                        }
+                    }
+                } else {
+                    alert('Ошибка: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+                alert('Произошла ошибка при отправке сообщения');
+            }
+        });
+    }
+    
+    // Добавление сообщения в чат
+    function appendMessage(message) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${message.is_staff ? 'staff' : 'client'}`;
+        messageDiv.innerHTML = `
+            <div class="message-content">${message.message}</div>
+            <div class="message-time">${message.created_at}</div>
+        `;
+        messagesContainer.appendChild(messageDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    // Загрузка сообщений тикета
+    async function loadTicketMessages(ticketId) {
+        try {
+            messagesContainer.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary" role="status"></div><p class="mt-2">Загрузка сообщений...</p></div>';
+            
+            const response = await fetch(`{% url "calculator:get_ticket_messages" 0 %}`.replace('0', ticketId), {
+                method: 'GET',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Очищаем контейнер сообщений
+                messagesContainer.innerHTML = '';
+                
+                // Добавляем сообщения
+                if (data.messages.length === 0) {
+                    messagesContainer.innerHTML = '<div class="no-messages text-center p-5"><p>История сообщений пуста</p></div>';
+                } else {
+                    data.messages.forEach(message => {
+                        const messageDiv = document.createElement('div');
+                        messageDiv.className = `message ${message.is_staff ? 'staff' : 'client'}`;
+                        messageDiv.innerHTML = `
+                            <div class="message-content">${message.message}</div>
+                            <div class="message-time">${message.created_at}</div>
+                        `;
+                        messagesContainer.appendChild(messageDiv);
+                    });
+                }
+                
+                // Прокручиваем вниз
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                
+                // Обновляем статус в выпадающем списке
+                for (let i = 0; i < ticketStatus.options.length; i++) {
+                    if (ticketStatus.options[i].value === data.ticket_status) {
+                        ticketStatus.selectedIndex = i;
+                        break;
+                    }
+                }
+            } else {
+                throw new Error(data.error || 'Неизвестная ошибка');
+            }
+        } catch (error) {
+            console.error('Ошибка при загрузке сообщений:', error);
+            messagesContainer.innerHTML = `
+                <div class="alert alert-danger m-3">
+                    <h5>Ошибка при загрузке сообщений</h5>
+                    <p>${error.message || 'Неизвестная ошибка'}</p>
+                    <button class="btn btn-outline-danger btn-sm mt-2" onclick="loadTicketMessages('${ticketId}')">
+                        <i class="bi bi-arrow-clockwise"></i> Попробовать снова
+                    </button>
+                </div>`;
+        }
+    }
+});
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %} 

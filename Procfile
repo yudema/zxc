@@ -1,0 +1,1 @@
+web: gunicorn pricecalc.pricecalc.wsgi:application 
