@@ -1,9 +1,7 @@
 """
 WSGI config for pricecalc project.
 
-This module contains the WSGI application used by Django's development server
-and any production WSGI deployments. It should expose a module-level variable
-named ``application``. Django's ``runserver`` and other commands will use this.
+It exposes the WSGI callable as a module-level variable named ``application``.
 """
 
 import os
@@ -13,10 +11,9 @@ import sys
 BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, BASE_PATH)
 
-# Добавляем директорию pricecalc/ в sys.path
-PRICECALC_APP_PATH = os.path.join(BASE_PATH, 'pricecalc')
-if PRICECALC_APP_PATH not in sys.path:
-    sys.path.insert(0, PRICECALC_APP_PATH)
+# Настраиваем переменные окружения
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'pricecalc.settings')
 
-# Перенаправляем на правильный wsgi-модуль в pricecalc/pricecalc/
-from pricecalc.wsgi import application 
+# Создаем WSGI приложение
+from django.core.wsgi import get_wsgi_application
+application = get_wsgi_application() 

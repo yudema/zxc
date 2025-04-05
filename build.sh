@@ -17,37 +17,39 @@ if [ -f "pricecalc/pricecalc/updated_settings.py" ]; then
   mv pricecalc/pricecalc/updated_settings.py pricecalc/pricecalc/settings.py
 fi
 
-# Добавляем wsgi.py в директорию pricecalc, если его нет
-if [ ! -f "pricecalc/wsgi.py" ]; then
-  echo "Создаем wsgi.py в корневой директории pricecalc..."
-  echo '"""
-WSGI config for pricecalc project.
-"""
-import os
-import sys
-BASE_PATH = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, BASE_PATH)
-PRICECALC_APP_PATH = os.path.join(BASE_PATH, "pricecalc")
-if PRICECALC_APP_PATH not in sys.path:
-    sys.path.insert(0, PRICECALC_APP_PATH)
-from pricecalc.wsgi import application
-' > pricecalc/wsgi.py
-fi
-
 # Показываем содержимое директорий для отладки
 echo "Содержимое директории pricecalc:"
 ls -la pricecalc/
 echo "Содержимое директории pricecalc/pricecalc:"
 ls -la pricecalc/pricecalc/
 
-# Создаем pricecalc/urls.py для перенаправления
+# Создаем правильный wsgi.py
 echo '"""
-URL configuration for pricecalc project.
-This module redirects to the main urls.py in the pricecalc package.
+WSGI config for pricecalc project.
 """
-from pricecalc.pricecalc.urls import *  # noqa' > pricecalc/urls.py
+import os
+import sys
 
-# Проверяем, что файл создан
+# Добавляем директории проекта в sys.path
+BASE_PATH = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, BASE_PATH)
+
+# Настраиваем переменные окружения
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "pricecalc.settings")
+
+# Создаем WSGI приложение
+from django.core.wsgi import get_wsgi_application
+application = get_wsgi_application()' > pricecalc/wsgi.py
+
+# Создаем urls.py для корня проекта
+echo '"""
+URL configuration redirector
+"""
+from pricecalc.urls import *  # noqa' > pricecalc/urls.py
+
+# Проверяем, что файлы созданы
+echo "Проверяем, что файл wsgi.py создан:"
+cat pricecalc/wsgi.py
 echo "Проверяем, что файл urls.py создан:"
 cat pricecalc/urls.py
 
