@@ -5,9 +5,13 @@ set -o errexit
 # Установка зависимостей
 pip install -r requirements.txt
 
-# Миграции базы данных
+# Создаем директорию для статических файлов
+mkdir -p staticfiles
+
+# Добавляем .env в корень проекта
+cp .env pricecalc/.env
+
+# Миграции базы данных и статика
 cd pricecalc
 python manage.py migrate
-
-# Соберем статику, если необходимо
 python manage.py collectstatic --no-input 

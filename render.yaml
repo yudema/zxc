@@ -9,6 +9,10 @@ services:
         generateValue: true
       - key: DEBUG
         value: False
+      - key: STATIC_ROOT
+        value: /opt/render/project/src/staticfiles
+      - key: STATIC_URL
+        value: /static/
       - key: PYTHON_VERSION
         value: 3.11.0
       - key: WEB_CONCURRENCY
