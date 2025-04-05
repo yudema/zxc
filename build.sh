@@ -40,6 +40,17 @@ ls -la pricecalc/
 echo "Содержимое директории pricecalc/pricecalc:"
 ls -la pricecalc/pricecalc/
 
+# Создаем pricecalc/urls.py для перенаправления
+echo '"""
+URL configuration for pricecalc project.
+This module redirects to the main urls.py in the pricecalc package.
+"""
+from pricecalc.pricecalc.urls import *  # noqa' > pricecalc/urls.py
+
+# Проверяем, что файл создан
+echo "Проверяем, что файл urls.py создан:"
+cat pricecalc/urls.py
+
 # Миграции базы данных и статика
 cd pricecalc
 python manage.py migrate
