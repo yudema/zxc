@@ -17,15 +17,19 @@ if [ -f "pricecalc/pricecalc/updated_settings.py" ]; then
   mv pricecalc/pricecalc/updated_settings.py pricecalc/pricecalc/settings.py
 fi
 
-# Проверяем, есть ли приложение calculator в pricecalc
-if [ ! -d "pricecalc/calculator" ]; then
-  echo "Копирование приложения calculator в pricecalc..."
-  if [ -d "calculator" ]; then
-    cp -r calculator pricecalc/
-  else
-    echo "ОШИБКА: Приложение calculator не найдено!"
-    exit 1
-  fi
+# Создаем символическую ссылку на calculator внутри pricecalc/
+if [ -d "calculator" ] && [ ! -d "pricecalc/calculator" ]; then
+  echo "Создание символической ссылки на calculator..."
+  ln -sf "$(pwd)/calculator" "$(pwd)/pricecalc/calculator"
+fi
+
+# Создаем файл __init__.py в директории, если его нет
+touch calculator/__init__.py
+
+# Добавляем wsgi.py в директорию pricecalc, если его нет
+if [ ! -f "pricecalc/wsgi.py" ] && [ -f "pricecalc/pricecalc/wsgi.py" ]; then
+  echo "Копируем wsgi.py в корневую директорию pricecalc..."
+  cp pricecalc/pricecalc/wsgi.py pricecalc/wsgi.py
 fi
 
 # Миграции базы данных и статика

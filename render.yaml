@@ -3,7 +3,7 @@ services:
     name: calculator
     env: python
     buildCommand: chmod +x build.sh && ./build.sh
-    startCommand: gunicorn --chdir pricecalc pricecalc.wsgi:application
+    startCommand: cd pricecalc && PYTHONPATH=/opt/render/project/src gunicorn pricecalc.wsgi:application
     envVars:
       - key: SECRET_KEY
         generateValue: true
