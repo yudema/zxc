@@ -41,11 +41,22 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "pricecalc.settings")
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()' > pricecalc/wsgi.py
 
-# Создаем urls.py для корня проекта
+# Создаем urls.py для корня проекта с прямыми маршрутами, без импорта
 echo '"""
-URL configuration redirector
+URL configuration for root pricecalc project.
 """
-from pricecalc.urls import *  # noqa' > pricecalc/urls.py
+from django.contrib import admin
+from django.urls import path, include
+from django.shortcuts import redirect
+
+def home_redirect(request):
+    return redirect("calculator:index")
+
+urlpatterns = [
+    path("", home_redirect, name="home"),
+    path("admin/", admin.site.urls),
+    path("calculator/", include("calculator.urls")),
+]' > pricecalc/urls.py
 
 # Проверяем, что файлы созданы
 echo "Проверяем, что файл wsgi.py создан:"

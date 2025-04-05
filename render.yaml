@@ -3,7 +3,7 @@ services:
     name: calculator
     env: python
     buildCommand: chmod +x build.sh && ./build.sh
-    startCommand: cd pricecalc && PYTHONPATH=$PYTHONPATH:/opt/render/project/src gunicorn wsgi:application
+    startCommand: cd pricecalc && PYTHONPATH=$PYTHONPATH:/opt/render/project/src DJANGO_SETTINGS_MODULE=pricecalc.settings gunicorn wsgi:application
     envVars:
       - key: SECRET_KEY
         generateValue: true
@@ -17,6 +17,8 @@ services:
         value: /opt/render/project/src
       - key: PYTHONPATH
         value: /opt/render/project/src
+      - key: DJANGO_SETTINGS_MODULE
+        value: pricecalc.settings
       - key: PYTHON_VERSION
         value: 3.11.0
       - key: WEB_CONCURRENCY

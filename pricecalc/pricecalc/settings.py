@@ -63,7 +63,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'pricecalc.pricecalc.urls'  # Исправлено для корректного пути к urls.py
+ROOT_URLCONF = 'urls'  # Исправлено для корректного пути к urls.py
 
 TEMPLATES = [
     {
