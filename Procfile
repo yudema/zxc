@@ -1,1 +1,1 @@
-web: gunicorn pricecalc.wsgi:application 
+web: cd pricecalc && gunicorn pricecalc.wsgi:application 

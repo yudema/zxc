@@ -6,6 +6,7 @@ set -o errexit
 pip install -r requirements.txt
 
 # Миграции базы данных
+cd pricecalc
 python manage.py migrate
 
 # Соберем статику, если необходимо
