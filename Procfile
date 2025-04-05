@@ -1,1 +1,1 @@
-web: cd pricecalc && PYTHONPATH=/opt/render/project/src/pricecalc gunicorn pricecalc.wsgi:application 
+web: gunicorn --chdir /opt/render/project/src/pricecalc --pythonpath /opt/render/project/src pricecalc.wsgi:application 

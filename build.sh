@@ -18,10 +18,27 @@ if [ -f "pricecalc/pricecalc/updated_settings.py" ]; then
 fi
 
 # Добавляем wsgi.py в директорию pricecalc, если его нет
-if [ ! -f "pricecalc/wsgi.py" ] && [ -f "pricecalc/pricecalc/wsgi.py" ]; then
-  echo "Копируем wsgi.py в корневую директорию pricecalc..."
-  cp pricecalc/pricecalc/wsgi.py pricecalc/wsgi.py
+if [ ! -f "pricecalc/wsgi.py" ]; then
+  echo "Создаем wsgi.py в корневой директории pricecalc..."
+  echo '"""
+WSGI config for pricecalc project.
+"""
+import os
+import sys
+BASE_PATH = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, BASE_PATH)
+PRICECALC_APP_PATH = os.path.join(BASE_PATH, "pricecalc")
+if PRICECALC_APP_PATH not in sys.path:
+    sys.path.insert(0, PRICECALC_APP_PATH)
+from pricecalc.wsgi import application
+' > pricecalc/wsgi.py
 fi
+
+# Показываем содержимое директорий для отладки
+echo "Содержимое директории pricecalc:"
+ls -la pricecalc/
+echo "Содержимое директории pricecalc/pricecalc:"
+ls -la pricecalc/pricecalc/
 
 # Миграции базы данных и статика
 cd pricecalc
