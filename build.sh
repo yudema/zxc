@@ -41,9 +41,9 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "pricecalc.settings")
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()' > pricecalc/wsgi.py
 
-# Создаем urls.py для корня проекта с прямыми маршрутами, без импорта
+# Создаем urls.py файл в pricecalc/pricecalc
 echo '"""
-URL configuration for root pricecalc project.
+URL configuration for pricecalc project.
 """
 from django.contrib import admin
 from django.urls import path, include
@@ -56,13 +56,25 @@ urlpatterns = [
     path("", home_redirect, name="home"),
     path("admin/", admin.site.urls),
     path("calculator/", include("calculator.urls")),
+]' > pricecalc/pricecalc/urls.py
+
+# Создаем корневой urls.py файл в pricecalc
+echo '"""
+Root URL configuration
+"""
+from django.urls import path, include
+
+urlpatterns = [
+    path("", include("pricecalc.urls")),
 ]' > pricecalc/urls.py
 
 # Проверяем, что файлы созданы
 echo "Проверяем, что файл wsgi.py создан:"
 cat pricecalc/wsgi.py
-echo "Проверяем, что файл urls.py создан:"
+echo "Проверяем, что файл pricecalc/urls.py создан:"
 cat pricecalc/urls.py
+echo "Проверяем, что файл pricecalc/pricecalc/urls.py создан:"
+cat pricecalc/pricecalc/urls.py
 
 # Миграции базы данных и статика
 cd pricecalc
