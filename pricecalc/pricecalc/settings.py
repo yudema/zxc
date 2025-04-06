@@ -63,7 +63,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'pricecalc.urls'  # Используем pricecalc.urls (без URLs)
+ROOT_URLCONF = 'pricecalc.pricecalc.urls'  # Указываем прямой путь к файлу
 
 TEMPLATES = [
     {
@@ -81,7 +81,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'wsgi.application'  # Изменено для использования корневого wsgi.py
+WSGI_APPLICATION = 'pricecalc.pricecalc.wsgi.application'  # Стандартный путь Django
 
 
 # Database

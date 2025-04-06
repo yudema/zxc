@@ -23,25 +23,7 @@ ls -la pricecalc/
 echo "Содержимое директории pricecalc/pricecalc:"
 ls -la pricecalc/pricecalc/
 
-# Создаем правильный wsgi.py
-echo '"""
-WSGI config for pricecalc project.
-"""
-import os
-import sys
-
-# Добавляем директории проекта в sys.path
-BASE_PATH = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, BASE_PATH)
-
-# Настраиваем переменные окружения
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "pricecalc.settings")
-
-# Создаем WSGI приложение
-from django.core.wsgi import get_wsgi_application
-application = get_wsgi_application()' > pricecalc/wsgi.py
-
-# Создаем urls.py файл в pricecalc/pricecalc
+# Создаем или заменяем urls.py в pricecalc/pricecalc
 echo '"""
 URL configuration for pricecalc project.
 """
@@ -58,22 +40,19 @@ urlpatterns = [
     path("calculator/", include("calculator.urls")),
 ]' > pricecalc/pricecalc/urls.py
 
-# Создаем корневой urls.py файл в pricecalc
-echo '"""
-Root URL configuration
+# Добавляем простой файл wsgi.py (Django будет использовать свой wsgi)
+if [ ! -f "pricecalc/pricecalc/wsgi.py" ]; then
+  echo '"""
+WSGI config for pricecalc project.
 """
-from django.urls import path, include
-
-urlpatterns = [
-    path("", include("pricecalc.urls")),
-]' > pricecalc/urls.py
+import os
+from django.core.wsgi import get_wsgi_application
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "pricecalc.settings")
+application = get_wsgi_application()' > pricecalc/pricecalc/wsgi.py
+fi
 
 # Проверяем, что файлы созданы
-echo "Проверяем, что файл wsgi.py создан:"
-cat pricecalc/wsgi.py
-echo "Проверяем, что файл pricecalc/urls.py создан:"
-cat pricecalc/urls.py
-echo "Проверяем, что файл pricecalc/pricecalc/urls.py создан:"
+echo "Файл urls.py создан:"
 cat pricecalc/pricecalc/urls.py
 
 # Миграции базы данных и статика
